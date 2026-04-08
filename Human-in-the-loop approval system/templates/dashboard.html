@@ -1,0 +1,84 @@
+<!-- templates/dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Moderation Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .score-high { color: #ef4444; font-weight: bold; }
+        .score-low { color: #10b981; }
+    </style>
+</head>
+<body class="bg-gray-100 p-8 font-sans">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-gray-800">HITL Content Moderation Dashboard 🛡️</h1>
+        
+        <!-- Submission Form Prototype -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-xl font-semibold mb-3">Simulate Incoming Content</h2>
+            <form action="/submit" method="POST" class="flex flex-col sm:flex-row items-center gap-4">
+                <input type="text" name="content" required placeholder="Type something... (try submitting 'is this a total scam' to see it get flagged)" 
+                       class="flex-1 w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                <button type="submit" class="w-full sm:w-auto bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 shadow-md transition font-semibold">Post Content</button>
+            </form>
+        </div>
+
+        <!-- Dashboard Queue Grid -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <h2 class="text-xl font-semibold p-4 border-b bg-gray-50 flex items-center justify-between">
+                <span>Active Review Queue</span>
+                <span class="text-sm font-normal text-gray-500 tracking-wide bg-white px-2 py-1 rounded shadow-sm border">{{ items|length }} Active Threads</span>
+            </h2>
+            
+            <div class="p-4 space-y-4">
+                {% if items|length == 0 %}
+                    <p class="text-gray-500 italic p-6 text-center">No content submitted yet.</p>
+                {% endif %}
+                
+                {% for item in items %}
+                <!-- Item Card formatting adapts cleanly if actively paused by LangGraph Checkpointers -->
+                <div class="border rounded-md p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition shadow-sm {% if item.is_paused %}bg-yellow-50 border-yellow-300{% else %}bg-gray-50 border-gray-200{% endif %}">
+                    
+                    <div class="flex-1">
+                        <p class="text-lg font-medium text-gray-800">"{{ item.content }}"</p>
+                        <p class="text-sm mt-2 text-gray-600">
+                            Risk Score: <span class="{% if item.score > 0.1 %}score-high{% else %}score-low{% endif %}">{{ "%.2f"|format(item.score) }}</span> | 
+                            Graph ID: <span class="text-xs text-gray-400 font-mono tracking-widest">{{ item.thread_id[:8] }}</span>
+                        </p>
+                    </div>
+
+                    <div class="flex flex-col items-end gap-3 min-w-[150px]">
+                        <!-- Dynamic Status Badge Logic -->
+                        <div>
+                            {% if item.status == 'approved' %}
+                                <span class="px-3 py-1.5 bg-green-100 text-green-800 text-xs font-bold rounded shadow-sm uppercase tracking-wider">✅ Auto-Approved</span>
+                            {% elif item.status == 'rejected' %}
+                                <span class="px-3 py-1.5 bg-red-100 text-red-800 text-xs font-bold rounded shadow-sm uppercase tracking-wider">❌ Rejected</span>
+                            {% elif item.is_paused %}
+                                <span class="px-3 py-1.5 bg-yellow-100 text-yellow-800 text-xs font-bold rounded shadow-sm uppercase tracking-wider animate-pulse flex items-center gap-2">⚠️ Pending Review</span>
+                            {% else %}
+                                <span class="px-3 py-1.5 bg-gray-100 text-gray-600 text-xs font-bold rounded shadow-sm uppercase tracking-wider">{{ item.status }}</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Action Approval Buttons solely visible when Checkpointer intercepts state -->
+                        {% if item.is_paused %}
+                        <div class="flex gap-2">
+                            <form action="/review/{{ item.thread_id }}" method="POST">
+                                <input type="hidden" name="action" value="approved">
+                                <button type="submit" class="bg-green-600 text-white text-sm font-semibold px-4 py-2 rounded hover:bg-green-500 shadow transition-all border border-green-700">Approve</button>
+                            </form>
+                            <form action="/review/{{ item.thread_id }}" method="POST">
+                                <input type="hidden" name="action" value="rejected">
+                                <button type="submit" class="bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded hover:bg-red-500 shadow transition-all border border-red-700">Reject</button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

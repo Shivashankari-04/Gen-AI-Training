@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI Powered Quiz App">
+    <title>AI Quiz Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>AI Quiz Generator</h1>
+            <p>Empowered by RAG and OpenAI</p>
+        </header>
+
+        <main id="app-content">
+            <!-- Setup Section -->
+            <section id="setup-section" class="card active">
+                <h2>1. Add Knowledge Context</h2>
+                <textarea id="knowledge-text" placeholder="Paste your study materials or document text here..."></textarea>
+                <button id="btn-ingest" class="primary-btn">Ingest Knowledge</button>
+                <div id="ingest-status" class="status-msg"></div>
+
+                <h2 class="mt-4">2. Generate Quiz</h2>
+                <div class="input-group">
+                    <input type="text" id="quiz-topic" placeholder="e.g., Photosynthesis" />
+                    <input type="number" id="quiz-count" placeholder="No. of Qs (default 3)" min="1" max="10" />
+                </div>
+                <button id="btn-generate" class="primary-btn">Generate Quiz</button>
+            </section>
+
+            <!-- Quiz Play Section -->
+            <section id="quiz-section" class="card hidden">
+                <div class="quiz-header">
+                    <h2>Quiz Time!</h2>
+                    <div id="timer">Time left: <span id="time-left">00:00</span></div>
+                </div>
+                <div id="question-container"></div>
+                <div class="quiz-actions">
+                    <button id="btn-next" class="primary-btn" disabled>Next Question</button>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section id="results-section" class="card hidden">
+                <h2>Quiz Results</h2>
+                <div class="score-display">
+                    <span id="final-score">0</span> / <span id="total-score">0</span>
+                </div>
+                <div id="results-details"></div>
+                <button id="btn-restart" class="primary-btn mt-4">Create New Quiz</button>
+            </section>
+        </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading" class="hidden">
+        <div class="spinner"></div>
+        <p>Processing via RAG Pipeline...</p>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
